@@ -169,6 +169,14 @@ sub _prepare_options {
 
 1;
 
+=option -as
+
+    use syntax let => { -as => 'having' };
+
+    my $y = having ($x = 3) { $x * $x };
+
+Allows you to rename the imported keyword.
+
 =head1 SYNOPSIS
 
     use syntax qw( let );
@@ -265,16 +273,6 @@ and so on. Each declaration can access the previous declarations:
 
 Remember that this is all parsed as an expression and will not automatically
 terminate after the end of the block.
-
-=head1 OPTIONS
-
-=head2 -as
-
-    use syntax let => { -as => 'having' };
-
-    my $y = having ($x = 3) { $x * $x };
-
-Allows you to rename the imported keyword.
 
 =head1 CAVEATS
 

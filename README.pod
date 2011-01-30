@@ -34,14 +34,6 @@ version 0.001
 This extension provides a C<let> keyword that behaves mostly like a C<do>
 block that can declare lexical variables.
 
-=head1 METHODS
-
-=head2 install
-
-    $class->install( %arguments )
-
-Used by L<syntax> to install this extension into the requesting namespace.
-
 =head1 SYNTAX
 
 The general syntax is one of the following:
@@ -120,6 +112,14 @@ terminate after the end of the block.
     my $y = having ($x = 3) { $x * $x };
 
 Allows you to rename the imported keyword.
+
+=head1 METHODS
+
+=head2 install
+
+    $class->install( %arguments )
+
+Used by L<syntax> to install this extension into the requesting namespace.
 
 =head1 CAVEATS
 
