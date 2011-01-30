@@ -1,0 +1,157 @@
+=head1 NAME
+
+Syntax::Feature::Let - Provides a simple let keyword
+
+=head1 VERSION
+
+version 0.001
+
+=head1 SYNOPSIS
+
+    use syntax qw( let );
+
+    # single value
+    my $val = let ( $x = foo() )
+                  ( $y = bar() ) {
+        $x + $y;
+    };
+
+    # multiple values
+    my @vals = let ( @x = (3 .. 7) )
+                   ( $y = 5 ) {
+        map $_ + $y, @x;
+    };
+
+    # initialise multiple values
+    my $result = let
+            ( ($x, $y) = (3, 5) )
+            ( $z = 23 ) {
+        $x + $y * $z;
+    };
+
+=head1 DESCRIPTION
+
+This extension provides a C<let> keyword that behaves mostly like a C<do>
+block that can declare lexical variables.
+
+=head1 METHODS
+
+=head2 install
+
+    $class->install( %arguments )
+
+Used by L<syntax> to install this extension into the requesting namespace.
+
+=head1 SYNTAX
+
+The general syntax is one of the following:
+
+    let ( <variable> = <expression> ) ... { <code> }
+    let ( (<variable>, ...) = <expression> ) ... { <code> }
+
+The keyword is parsed as an expression. It is therefore possible to embed
+the C<let> block inside another expression:
+
+    $self->some_method(
+        let ($uri = $self->some_uri) {
+            $uri->host,
+            $uri->path,
+        },
+        $some_arg,
+    );
+
+The C<code> inside the block will always be called in list context. This is
+to make the implementation simple and fast, while keeping the behaviour of
+a block instead of a subroutine.
+
+The block is a real block, not a subroutine. You can therefor return out
+of the enclosing subroutine just like you can with a C<while> loop:
+
+    method something ($id) {
+
+        my $foo = let ($bar = $self->get($id)) {
+
+            # leaves the method 'something'
+            return undef
+                unless $bar->is_active;
+
+            # value returned to $foo
+            $bar->baz;
+        };
+
+        return $foo->qux;
+    }
+
+The keyword expects one or more parenthesis enclosed variable declarations
+per block. These declarations are of the form
+
+    <variable> = <expression>
+
+or
+
+    ( <variable1>, <variable2>, ... ) = <expression>
+
+which allows for all of the following use cases:
+
+    let ( $x = foo() )       { ... };
+    let ( @x = foo() )       { ... };
+    let ( %x = foo() )       { ... };
+    let ( ($x, $y) = foo() ) { ... };
+    let ( ($x, @y) = foo() ) { ... };
+
+and so on. Each declaration can access the previous declarations:
+
+    my $foo = let
+            ($x = 23)
+            ($y = $x * 2) {
+
+        "result: $y";
+    };
+
+Remember that this is all parsed as an expression and will not automatically
+terminate after the end of the block.
+
+=head1 OPTIONS
+
+=head2 -as
+
+    use syntax let => { -as => 'having' };
+
+    my $y = having ($x = 3) { $x * $x };
+
+Allows you to rename the imported keyword.
+
+=head1 CAVEATS
+
+=over
+
+=item * The block is always executed in list context.
+
+=back
+
+=head1 SEE ALSO
+
+=over
+
+=item * L<syntax>
+
+=item * L<Devel::Declare>
+
+=back
+
+=head1 BUGS
+
+Please report any bugs or feature requests to bug-syntax-feature-let@rt.cpan.org or through the web interface at:
+ http://rt.cpan.org/Public/Dist/Display.html?Name=Syntax-Feature-Let
+
+=head1 AUTHOR
+
+Robert 'phaylon' Sedlacek <rs@474.at>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2011 by Robert 'phaylon' Sedlacek.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
