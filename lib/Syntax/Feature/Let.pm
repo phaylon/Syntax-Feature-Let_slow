@@ -214,9 +214,8 @@ the C<let> block inside another expression:
         $some_arg,
     );
 
-The C<code> inside the block will always be called in list context. This is
-to make the implementation simple and fast, while keeping the behaviour of
-a block instead of a subroutine.
+The C<code> inside the block should be called in the right context. This is
+a bit of a hack and might not be true in some edge cases.
 
 The block is a real block, not a subroutine. You can therefor return out
 of the enclosing subroutine just like you can with a C<while> loop:
