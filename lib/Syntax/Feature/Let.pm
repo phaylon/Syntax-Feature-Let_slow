@@ -6,10 +6,11 @@ package Syntax::Feature::Let;
 
 use B::Hooks::EndOfScope    0.09;
 use Carp                                qw( croak );
-use Sub::Install            0.925       qw( install_sub );
 use Scope::Upper            0.13        qw( :words unwind want_at );
 use Devel::Declare          0.006000;
 use Params::Classify        0.013       qw( is_ref is_string );
+use Sub::Bypass             0.001;
+use B::Hooks::Parser;
 
 use aliased 'Devel::Declare::Context::Simple', 'Context';
 
@@ -36,20 +37,7 @@ sub install {
             return $class->_transform(Context->new->init(@_), $options);
         }}},
     );
-    install_sub {
-        into => $target,
-        as   => $name,
-        code => $class->_runtime_callback($options),
-    };
-    on_scope_end {
-        namespace::clean->clean_subroutines($name);
-    };
-}
-
-
-sub _runtime_callback {
-    my ($class, $options) = @_;
-    return sub { wantarray ? @_ : $_[-1] };
+    install_bypassed_sub $target, $name;
 }
 
 sub _transform {
@@ -81,7 +69,7 @@ sub _handle_block_end {
     on_scope_end {
         my $linestr = Devel::Declare::get_linestr;
         my $offset  = Devel::Declare::get_linestr_offset;
-        substr($linestr, $offset, 0) = ', @_)';
+        substr($linestr, $offset, 0) = ')';
         Devel::Declare::set_linestr($linestr);
     };
 }
@@ -132,10 +120,12 @@ my $rxDeclaration = qr{
     \s*
     ( $rxVariable | $rxVariableList )
     \s*
-    =
-    \s*
-    ( \S.* )
-    \s*
+    (?:
+        =
+        \s*
+        ( \S.* )
+        \s*
+    )?
     \Z
 }xism;
 
@@ -143,7 +133,7 @@ sub _deparse_var_declaration {
     my ($class, $ctx, $declaration) = @_;
     if ($declaration =~ $rxDeclaration) {
         my ($var, $expr) = ($1, $2);
-        return [$1, $2];
+        return [$1, defined($2) ? $2 : 'undef'];
     }
     my $keyword = $ctx->declarator;
     croak qq{Invalid $keyword variable declaration '$declaration'};
