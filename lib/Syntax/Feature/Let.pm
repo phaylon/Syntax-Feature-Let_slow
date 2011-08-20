@@ -10,11 +10,12 @@ use Scope::Upper            0.13        qw( :words unwind want_at );
 use Devel::Declare          0.006000;
 use Params::Classify        0.013       qw( is_ref is_string );
 use Sub::Bypass             0.001;
-use B::Hooks::Parser;
+use B::Hooks::Parser        0.09;
+use Devel::Declare          0.006004    ();
 
 use aliased 'Devel::Declare::Context::Simple', 'Context';
 
-use namespace::clean;
+use namespace::clean 0.20;
 
 $Carp::Internal{ +__PACKAGE__ }++;
 
@@ -266,11 +267,7 @@ terminate after the end of the block.
 
 =head1 CAVEATS
 
-=over
-
-=item * The block is always executed in list context.
-
-=back
+See L<Sub::Bypass/CAVEATS>.
 
 =head1 SEE ALSO
 
@@ -279,6 +276,8 @@ terminate after the end of the block.
 =item * L<syntax>
 
 =item * L<Devel::Declare>
+
+=item * L<Sub::Bypass>
 
 =back
 
